@@ -5,18 +5,21 @@ use std::f64::consts::PI;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 #[repr(C)]
+#[derive(std::fmt::Debug)]
 pub struct Path {
     offset: usize,
     length: usize,
 }
 
 #[repr(u8)]
+#[derive(std::fmt::Debug)]
 pub enum PathEnd {
     Open = 0,
     Closed = 1,
 }
 
 #[wasm_bindgen]
+#[derive(std::fmt::Debug)]
 pub struct PathList {
     paths: Vec<Path>,
     alphas: Vec<f64>,
