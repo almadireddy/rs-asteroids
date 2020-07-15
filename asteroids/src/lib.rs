@@ -66,6 +66,10 @@ enum State {
         text: Vec<Polyline>,
         asteroids: Vec<Asteroid>,
     },
+    NewMultiPlayer {
+        code: Vec<Polyline>,
+        inputFocused: bool,
+    },
     LevelIntro {
         score: u32,
         number: u8,
@@ -95,12 +99,15 @@ impl Game {
             width: 1200.0,
             height: 900.0,
         };
+
         let font = FontLibrary {
             small: Font::new(32.0),
             medium: Font::new(96.0),
             large: Font::new(144.0),
         };
+
         let high_score = 0;
+
         Game {
             state: Game::main_title(&bounds, &font, high_score),
             bounds,
@@ -113,12 +120,21 @@ impl Game {
         let mut rng = Pcg32::seed_from_u64(1979);
         let center = bounds.center();
         let mut text = font.large.typeset_line(Align::Center, &center, "ASTEROIDS");
+        
+        text.extend(font.medium.typeset_line(
+            Align::Center,
+            &Point::new(center.x, center.y + 1.5 * font.medium.height()),
+            "MULTIPLAYER",
+        ));
+
         text.extend(font.small.typeset_line(
             Align::Center,
-            &Point::new(center.x, center.y + 3.0 * font.small.height()),
+            &Point::new(center.x, center.y + 9.0 * font.small.height()),
             "PRESS START",
         ));
+        
         text.extend(Game::display_score(high_score, bounds, font));
+        
         MainTitle {
             text,
             asteroids: Asteroid::field(&mut rng, bounds, 12, 0.0),
@@ -130,7 +146,9 @@ impl Game {
         let title = format!("LEVEL {}", number);
         let text = (font.medium).typeset_line(Align::Center, &bounds.center(), &title);
         let mut asteroids = Level::asteroid_field(number, &bounds);
+
         asteroids_step(-duration, &bounds, &mut asteroids);
+
         LevelIntro {
             score,
             number,
@@ -152,6 +170,7 @@ impl Game {
         if dt <= 0.0 {
             return ();
         }
+
         match &mut self.state {
             MainTitle { asteroids, .. } => {
                 if controls.start() {
@@ -160,6 +179,7 @@ impl Game {
                     asteroids_step(dt, &self.bounds, asteroids);
                 }
             }
+
             LevelIntro {
                 score,
                 number,
@@ -180,6 +200,14 @@ impl Game {
                     asteroids_step(dt, &self.bounds, asteroids);
                 }
             }
+
+            NewMultiPlayer {
+                code: c,
+                inputFocused: focused
+            } => {
+
+            }
+
             ActiveLevel {
                 score: _,
                 level,
@@ -199,6 +227,7 @@ impl Game {
                     };
                 }
             }
+
             ActiveLevel {
                 score,
                 level,
@@ -226,17 +255,21 @@ impl Game {
                     }
                 }
             }
+
             ActiveLevel {
                 score,
                 level,
                 state: Destroyed { text, timer },
             } => {
                 timer.step(dt);
+
                 if timer.is_elapsed() {
                     let final_score = *score + level.score();
+
                     if self.high_score < final_score {
                         self.high_score = final_score;
                     }
+
                     self.state = Game::main_title(&self.bounds, &self.font, self.high_score);
                 } else if controls.start() {
                     self.state =
@@ -247,11 +280,13 @@ impl Game {
                     let t = timer.remaining().ceil() as u8;
                     if t <= 5 && t < (dt + timer.remaining()).ceil() as u8 {
                         let center = self.bounds.center();
+                        
                         *text = (self.font.small).typeset_line(
                             Align::Center,
                             &Point::new(center.x, center.y - self.font.medium.height()),
                             "PRESS START TO CONTINUE",
                         );
+
                         text.extend((self.font.medium).typeset_line(
                             Align::Center,
                             &Point::new(center.x, center.y + 2.0 * self.font.small.height()),
@@ -270,13 +305,16 @@ impl Game {
             &None
         }
     }
+    
     pub fn asteroids(&self) -> &[Asteroid] {
         match &self.state {
             MainTitle { asteroids, .. } => &asteroids,
             LevelIntro { asteroids, .. } => &asteroids,
             ActiveLevel { level, .. } => &level.asteroids(),
+            _ => {}
         }
     }
+
     pub fn blasts(&self) -> &[Blast] {
         if let ActiveLevel { level, .. } = &self.state {
             &level.blasts()
@@ -284,6 +322,7 @@ impl Game {
             &[]
         }
     }
+    
     pub fn particles(&self) -> &[Particle] {
         if let ActiveLevel { level, .. } = &self.state {
             &level.particles()
@@ -291,6 +330,7 @@ impl Game {
             &[]
         }
     }
+
     pub fn text(&self) -> &[Polyline] {
         match &self.state {
             MainTitle { text, .. } => &text,
@@ -300,8 +340,10 @@ impl Game {
                 Cleared { text, .. } => &text,
                 Destroyed { text, .. } => &text,
             },
+            _ => {}
         }
     }
+
     pub fn hud(&self) -> Vec<Polyline> {
         match &self.state {
             MainTitle { .. } => Vec::new(),
@@ -309,6 +351,7 @@ impl Game {
             ActiveLevel { score, level, .. } => {
                 Game::display_score(*score + level.score(), &self.bounds, &self.font)
             }
+            _ => {}
         }
     }
 }

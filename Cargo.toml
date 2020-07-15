@@ -3,4 +3,5 @@ members = [
     "asteroids",
     "app",
     "examples",
+    "server"
 ]

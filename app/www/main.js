@@ -151,6 +151,7 @@ function draw() {
     for (let i = 0; i < length; i += 1) {
         drawPoints(drawingContext, points, paths[i * 2], paths[i * 2 + 1], alphas[i], ends[i] === 1);
     }
+    // get another similar list from server, which is annotated with colors and draw that as well
     list.free();
 
     // drawing -> screen

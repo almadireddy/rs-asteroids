@@ -46,7 +46,7 @@ const THRUSTING_INTERVAL: f64 = 1.0 / 12.0; // seconds (12 hz)
 const EXHAUST_SPEED: f64 = 120.0; // px / second
 const EXHAUST_MAX_AGE: f64 = 0.2; // seconds
 
-struct Spaceship {
+pub struct Spaceship {
     radius: f64,
     hull: Vec<Point>,
     interior: Vec<Point>,
@@ -67,13 +67,13 @@ impl Spaceship {
     }
 }
 
-enum Aux {
+pub enum Aux {
     Off,
     Firing { interval: Interval },
     Shielding { delay: Timer },
 }
 
-enum Engine {
+pub enum Engine {
     Idle,
     Thrusting { interval: Interval },
 }
@@ -84,12 +84,12 @@ pub struct Impact {
 }
 
 pub struct Player {
-    placement: Placement,
-    movement: Movement,
-    spaceship: Spaceship,
-    aux: Aux,
-    engine: Engine,
-    exhaust: Vec<Timer>,
+    pub placement: Placement,
+    pub movement: Movement,
+    pub spaceship: Spaceship,
+    pub aux: Aux,
+    pub engine: Engine,
+    pub exhaust: Vec<Timer>,
 }
 
 impl Player {
